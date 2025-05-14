@@ -20,9 +20,9 @@ jobs:
       run: |
         uv sync
     - name: Ensure browsers are installed
-      run: python -m playwright install --with-deps
+      run: uv run python -m playwright install --with-deps
     - name: Run your tests
-      run: pytest --tracing=retain-on-failure --output=reports --screenshot=only-on-failure --junitxml=reports/junit.xml
+      run: uv run pytest --output=reports --screenshot=only-on-failure --junitxml=reports/junit.xml
     - run: npx testbeats@latest publish --slack ${{ secrets.SLACK_MVP_URL }} --junit reports/junit.xml --ci-info --chart-test-summary
       if: always()
       env:
