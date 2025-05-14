@@ -1,0 +1,30 @@
+name: Playwright Pytest Tests
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+    - name: Install dependencies
+      run: |
+        uv sync pyproject.toml
+    - name: Ensure browsers are installed
+      run: python -m playwright install --with-deps
+    - name: Run your tests
+      run: pytest --tracing=retain-on-failure --output=reports --screenshot=only-on-failure --junitxml=reports/junit.xml
+    - run: npx testbeats@latest publish --slack ${{ secrets.SLACK_MVP_URL }} --junit reports/junit.xml --ci-info --chart-test-summary
+      if: always()
+      env:
+        TEST_BEATS_API_KEY: ${{ secrets.TEST_BEATS_API_KEY }}
+        TEST_BEATS_PROJECT: "testbeats/examples"
